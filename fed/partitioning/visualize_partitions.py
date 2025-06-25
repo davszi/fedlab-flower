@@ -15,7 +15,7 @@ def plot_label_distribution(
     file_name: str,
     display_name: str = None,
     close_figure: bool = True,
-    **kwargs
+    **kwargs,
 ):
     """Plot the distribution of labels across partitions for a given strategy.
 
@@ -26,8 +26,19 @@ def plot_label_distribution(
         **kwargs: Additional parameters for the partitioner
     """
     # Always set partition_by to "label" for strategies that need it
-    if strategy in ["dirichlet", "pathological", "shard"] and "partition_by" not in kwargs:
-        kwargs["partition_by"] = "label"
+    if dataset == "uoft-cs/cifar100":
+        main_label = "fine_label"
+        num_classes = 100
+    elif dataset == "uoft-cs/cifar10":
+        main_label = "label"
+        num_classes = 10
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
+    if (
+        strategy in ["dirichlet", "pathological", "shard"]
+        and "partition_by" not in kwargs
+    ):
+        kwargs["partition_by"] = main_label
 
     # Get the partitioner
     partitioner = get_partitioner(strategy, num_partitions, **kwargs)
@@ -41,14 +52,13 @@ def plot_label_distribution(
     # Track label distribution for each partition
     partition_label_counts = []
     partition_sizes = []
-    num_classes = 10  # Assuming CIFAR-10
 
     for i in range(num_partitions):
         partition = fds.load_partition(i)
         partition_sizes.append(len(partition))
 
         # Directly access the "label" key
-        label_counts = Counter(partition["label"])
+        label_counts = Counter(partition[main_label])
 
         # Convert to a normalized distribution
         distribution = np.zeros(num_classes)
@@ -67,24 +77,22 @@ def plot_label_distribution(
     # Heatmap for label distribution
     plt.subplot(2, 1, 1)
     heatmap = plt.imshow(
-        np.array(partition_label_counts),
-        aspect='auto',
-        cmap='viridis'
+        np.array(partition_label_counts), aspect="auto", cmap="viridis"
     )
     display_name = display_name or strategy
-    plt.colorbar(heatmap, label='Percentage of samples (%)')
-    plt.xlabel('Class Label')
-    plt.ylabel('Partition ID')
-    plt.title(f'Label Distribution Across Partitions ({display_name})')
+    plt.colorbar(heatmap, label="Percentage of samples (%)")
+    plt.xlabel("Class Label")
+    plt.ylabel("Partition ID")
+    plt.title(f"Label Distribution Across Partitions ({display_name})")
     plt.xticks(range(num_classes))
     plt.yticks(range(num_partitions), range(num_partitions))
 
     # Bar chart for partition sizes
     plt.subplot(2, 1, 2)
     plt.bar(range(num_partitions), partition_sizes)
-    plt.xlabel('Partition ID')
-    plt.ylabel('Number of Samples')
-    plt.title(f'Partition Sizes ({display_name})')
+    plt.xlabel("Partition ID")
+    plt.ylabel("Number of Samples")
+    plt.title(f"Partition Sizes ({display_name})")
     plt.xticks(range(num_partitions), range(num_partitions))
 
     plt.tight_layout()
@@ -95,7 +103,9 @@ def plot_label_distribution(
     print(f"Visualization saved to {file_name}")
 
 
-def generate_all_visualizations(strategies: list[dict],dataset='uoft-cs/cifar10', num_partitions=3):
+def generate_all_visualizations(
+    strategies: list[dict], dataset="uoft-cs/cifar10", num_partitions=9
+):
     """Generate visualizations for all supported partitioning strategies.
 
     Args:
@@ -117,74 +127,46 @@ def generate_all_visualizations(strategies: list[dict],dataset='uoft-cs/cifar10'
         print(f"Generating visualization for {strategy_display} strategy")
         print(f"{'='*50}\n")
 
-        try:
-            plot_label_distribution(
-                dataset=dataset,
-                strategy=strategy_name,
-                num_partitions=num_partitions,
-                file_name=f'partition_distribution_{strategy_display}.png',
-                display_name=strategy_display,  # Use display name for the plot title
-                **params
-            )
-
-        except Exception as e:
-            print(f"Error generating visualization for {strategy_display}: {e}")
+        plot_label_distribution(
+            dataset=dataset,
+            strategy=strategy_name,
+            num_partitions=num_partitions,
+            file_name=f"partition_distribution_{strategy_display}.png",
+            display_name=strategy_display,  # Use display name for the plot title
+            **params,
+        )
 
     print("\nAll visualizations generated successfully!")
 
 
 if __name__ == "__main__":
-
     strategies = [
-        {
-            "name": "iid",
-            "params": {}
-        },
-        {
-            "name": "dirichlet",
-            "params": {"alpha": 0.5}
-        },
+        {"name": "iid", "params": {}},
+        {"name": "dirichlet", "params": {"alpha": 0.5}},
         {
             "name": "dirichlet",
             "params": {"alpha": 0.1},
-            "suffix": "skewed"  # More skewed distribution
+            "suffix": "skewed",  # More skewed distribution
         },
+        {"name": "pathological", "params": {"num_classes_per_partition": 3}},
         {
             "name": "pathological",
-            "params": {"num_classes_per_partition": 4}
-        },
-        {
-            "name": "pathological",
-            "params": {"num_classes_per_partition": 4,
-                       "class_assignment_mode": "first-deterministic"},
+            "params": {
+                "num_classes_per_partition": 3,
+                "class_assignment_mode": "first-deterministic",
+            },
             "suffix": "first-deterministic",
         },
         {
             "name": "pathological",
-            "params": {"num_classes_per_partition": 4,
-                       "complete_mode": True},
+            "params": {"num_classes_per_partition": 3, "complete_mode": True},
             "suffix": "complete",
         },
-        {
-            "name": "shard",
-            "params": {"shards_per_partition": 2}
-        },
-        {
-            "name": "linear",
-            "params": {}
-        },
-        {
-            "name": "size",
-            "params": {"partition_sizes": [0.5, 0.3, 0.2]}
-        },
-        {
-            "name": "square",
-            "params": {}
-        },
-        {
-            "name": "exponential",
-            "params": {}
-        }
+        {"name": "shard", "params": {"shards_per_partition": 2}},
+        {"name": "linear", "params": {}},
+        {"name": "size", "params": {"partition_sizes": [0.5, 0.3, 0.2]}},
+        {"name": "square", "params": {}},
+        {"name": "exponential", "params": {}},
     ]
 
     print("Starting automatic generation of federated data partitioning visualizations")
