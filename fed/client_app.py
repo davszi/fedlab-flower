@@ -10,13 +10,11 @@ from fed.task import Net, get_weights, load_data, set_weights, test, train
 
 
 def select_epochs_count(partition_id: int) -> int:
-    weights = [1, 2, 4, 2, 1]
-    if partition_id % 3 == 0:
-        num_range = range(3, 8)  # CPUs
-    elif partition_id % 3 == 1:
-        num_range = range(8, 13)  # Weak GPUs
+    weights = [1, 5, 8, 5, 1]
+    if partition_id % 2 == 0:
+        num_range = range(2, 7)  # type1
     else:
-        num_range = range(13, 18)  # Strong GPUs
+        num_range = range(8, 13)  # type2
     return random.choices(num_range, weights=weights)[0]
 
 
@@ -98,6 +96,11 @@ def client_fn(context: Context):
     if "classes-per-partition" in context.run_config:
         partitioning_kwargs["classes_per_partition"] = int(
             context.run_config["classes-per-partition"]
+        )
+
+    if "complete-mode" in context.run_config:
+        partitioning_kwargs["complete_mode"] = bool(
+            context.run_config["complete-mode"]
         )
 
     dataset_name = context.run_config.get("dataset", "uoft-cs/cifar10")

@@ -44,8 +44,8 @@ partitioning-strategy = "dirichlet" # "iid", "dirichlet", "pathological", "shard
 # For Dirichlet partitioning
 dirichlet-alpha = 0.1
 # For Pathological partitioning
-# num_classes-per-partition = 2 # For a smooth experience make sure that num_partitions * num_classes-per-partition >= num_classes in the dataset
-# complete_mode = true # If true ensures that every label is in ≥1 partitions, ref CompletePathologicalPartition
+classes-per-partition = 2 # For a smooth experience make sure that num_partitions * num_classes-per-partition >= num_classes in the dataset
+complete-mode = false # If true ensures that every label is in ≥1 partitions, ref CompletePathologicalPartition
 
 # Server configuration
 num-server-rounds = 50
@@ -54,7 +54,7 @@ server_learning-rate = 0.01
 
 # Client configuration
 local-epochs = 10
-different_compute = false # If true, clients simulate having different compute resources
+different-compute = false # If true, clients simulate having different compute resources
 early-stopping = true
 batch-size = 256
 client-learning-rate = 0.001
@@ -64,6 +64,6 @@ client-optimizer = "adam" # "adam" or "sgd"
 default = "local-simulation"
 
 [tool.flwr.federations.local-simulation]
-options.num-supernodes = 3
-#options.backend.client-resources.num-cpus = 1
-#options.backend.client-resources.num-gpus = 0.3
+options.num-supernodes = 8 
+options.backend.client-resources.num-cpus = 1
+options.backend.client-resources.num-gpus = 0.1
