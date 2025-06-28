@@ -25,6 +25,12 @@ edge-device scenarios.
 For detailed installation instructions, please refer to
 the [Flower installation guide](https://flower.ai/docs/framework/how-to-install-flower.html).
 
+To install python dependencies (including pytorch cuda packages), run the following command:
+
+```shell
+pip install -e . -f https://download.pytorch.org/whl/torch  -f https://download.pytorch.org/whl/torchvision/
+```
+
 ## 🛠️ Configuration
 
 All parameters can be configured in `pyproject.toml` under `[tool.flwr.app.config]`.
