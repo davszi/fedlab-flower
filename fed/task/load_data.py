@@ -15,6 +15,7 @@ def load_data(
     num_partitions: int,
     dataset_name: str,
     partitioning_strategy: str,
+    label_name: str,
     seed: Optional[int],
     test_size: float = 0.2,
     validate_size: float = 0.0,
@@ -26,7 +27,7 @@ def load_data(
         partitioning_strategy in ["dirichlet", "pathological", "shard"]
         and "partition_by" not in partitioning_kwargs
     ):
-        partitioning_kwargs["partition_by"] = "label"
+        partitioning_kwargs["partition_by"] = label_name
 
     # Create a cache key based on the dataset and partitioning configuration
     cache_key = (
@@ -56,6 +57,7 @@ def load_data(
     def apply_transforms(batch):
         """Apply transforms to the partition from FederatedDataset."""
         batch["img"] = [pytorch_transforms(img) for img in batch["img"]]
+        batch["label"] = batch[label_name]
         return batch
 
     # Load the specific partition

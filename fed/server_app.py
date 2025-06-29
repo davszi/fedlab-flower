@@ -243,6 +243,7 @@ def evaluate_server_side(
     architectuere = context.run_config.get("architecture", "vgg11")
     net = Net(architecture=architectuere).to(device)
     seed = context.run_config.get("seed", -1)
+    label_name = context.run_config.get("dataset-label", "label")
 
     # Load test data from partition 0
     _, _, testloader = load_data(
@@ -250,6 +251,7 @@ def evaluate_server_side(
         num_partitions=1,  # Server uses centralized evaluation
         dataset_name=context.run_config.get("dataset", "uoft-cs/cifar10"),
         partitioning_strategy="iid",
+        label_name=label_name,
         test_size=0.99,  # 0.0 and 1.0 is not allowed
         validate_size=0.0,
         seed=seed if seed != -1 else None,

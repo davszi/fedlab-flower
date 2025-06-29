@@ -13,12 +13,12 @@ declare -A partition_options
 partition_options["iid"]="partitioning-strategy=\"iid\""
 partition_options["dirichlet"]="partitioning-strategy=\"dirichlet\" dirichlet-alpha=0.5"
 partition_options["dirichlet-skewed"]="partitioning-strategy=\"dirichlet\" dirichlet-alpha=0.1"
-partition_options["pathological"]="partitioning-strategy=\"pathological\" classes-per-partition=7 complete-mode=true"
+partition_options["pathological"]="partitioning-strategy=\"pathological\" classes-per-partition=70 complete-mode=true"
 
-common_options="dataset=\"uoft-cs/cifar10\" num-server-rounds=40 fraction-fit=1.0 different-compute=true batch-size=1024 client-learning-rate=0.001 architecture=\"vgg11\""
+common_options="dataset=\"uoft-cs/cifar100\" dataset-label=\"fine_label\" num-server-rounds=40 fraction-fit=1.0 different-compute=true batch-size=1024 client-learning-rate=0.001 architecture=\"vgg11\""
 
 experiment_id=0
-skip_experiments=12
+skip_experiments=0
 
 for partition in "${partitions[@]}"; do
     partition_option=${partition_options[$partition]}
@@ -30,7 +30,7 @@ for partition in "${partitions[@]}"; do
         fi
 
 	strategy_option=${strategy_options[$strategy]}
-        run_name="${strategy}-${partition}"
+        run_name="${strategy}-${partition}-cifar100"
         echo "Starting run $experiment_id: $run_name"
 
         flwr run . --run-config "run-name=\"$run_name\" $strategy_option $partition_option $common_options"

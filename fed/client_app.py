@@ -82,13 +82,14 @@ def client_fn(context: Context):
     net = Net(architecture=architecture)
     partition_id = context.node_config["partition-id"]
     num_partitions = context.node_config["num-partitions"]
+    label_name = context.run_config.get("dataset-label", "label")
 
     partitioning_strategy = context.run_config.get("partitioning-strategy", "iid")
     partitioning_kwargs = {}
 
     # Always set partition_by to "label" for strategies that need it
     if partitioning_strategy in ["dirichlet", "pathological", "shard"]:
-        partitioning_kwargs["partition_by"] = "label"
+        partitioning_kwargs["partition_by"] = label_name
 
     if "dirichlet-alpha" in context.run_config:
         partitioning_kwargs["alpha"] = float(context.run_config["dirichlet-alpha"])
@@ -111,6 +112,7 @@ def client_fn(context: Context):
         num_partitions=num_partitions,
         dataset_name=dataset_name,
         partitioning_strategy=partitioning_strategy,
+        label_name=label_name,
         test_size=0.2,  # % of whole dataset to use for testing, rest is training + validation
         validate_size=0.1,  # % of train subset to use for validation, rest is training
         seed=seed if seed != -1 else None,

@@ -35,6 +35,7 @@ run-name = "" # appened to the run name: "{dataset}-{architecture}-{partitioning
 
 architecture = "resnet18" # "vgg11", "resnet18",
 dataset = "uoft-cs/cifar10" # "cifar10", "cifar100", ...
+dataset-label = "label" # "label" for cifar10, "coarse_label" / "fine_label" for 20 / 100 classes in cifar100, ...
 
 strategy-name = "fedopt" # "fedavg", "fedavg-weighted", "fedopt"
 strat_optimizer = "adagrad" #if FedOpt: "yogi" or "adam" or "adagrad"
