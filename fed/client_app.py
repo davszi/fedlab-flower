@@ -95,7 +95,7 @@ def client_fn(context: Context):
         partitioning_kwargs["alpha"] = float(context.run_config["dirichlet-alpha"])
 
     if "classes-per-partition" in context.run_config:
-        partitioning_kwargs["classes_per_partition"] = int(
+        partitioning_kwargs["num_classes_per_partition"] = int(
             context.run_config["classes-per-partition"]
         )
 
