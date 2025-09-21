@@ -7,7 +7,6 @@ from collections import Counter
 from flwr_datasets import FederatedDataset
 from fed.partitioning.partitioning import get_partitioner
 
-
 def plot_label_distribution(
     dataset: str,
     strategy: str,
@@ -72,18 +71,18 @@ def plot_label_distribution(
         partition_label_counts.append(distribution)
 
     # Plot the distribution
-    plt.figure(figsize=(12, 8))
-
+    plt.figure(figsize=(5, 8))
     # Heatmap for label distribution
     plt.subplot(2, 1, 1)
     heatmap = plt.imshow(
         np.array(partition_label_counts), aspect="auto", cmap="viridis"
     )
     display_name = display_name or strategy
+    plt.suptitle(f"{' '.join(map(lambda x: x.capitalize(), display_name.split('-')))} partitioning")
     plt.colorbar(heatmap, label="Percentage of samples (%)")
     plt.xlabel("Class Label")
     plt.ylabel("Partition ID")
-    plt.title(f"Label Distribution Across Partitions ({display_name})")
+    plt.title(f"Label Distribution Across Partitions")
     plt.xticks(range(num_classes))
     plt.yticks(range(num_partitions), range(num_partitions))
 
@@ -92,11 +91,11 @@ def plot_label_distribution(
     plt.bar(range(num_partitions), partition_sizes)
     plt.xlabel("Partition ID")
     plt.ylabel("Number of Samples")
-    plt.title(f"Partition Sizes ({display_name})")
+    plt.title(f"Partition Sizes")
     plt.xticks(range(num_partitions), range(num_partitions))
 
     plt.tight_layout()
-    plt.savefig(file_name)
+    plt.savefig(file_name, dpi=250)
     if close_figure:
         plt.close()  # Close the figure to free memory
 
@@ -112,6 +111,8 @@ def generate_all_visualizations(
         dataset: Name of the dataset to use
         num_partitions: Number of partitions to create
     """
+
+    seed = np.random.randint(0, 10000)
 
     for strategy_config in strategies:
         strategy_name = strategy_config["name"]
@@ -131,6 +132,7 @@ def generate_all_visualizations(
             dataset=dataset,
             strategy=strategy_name,
             num_partitions=num_partitions,
+            seed=seed,
             file_name=f"partition_distribution_{strategy_display}.png",
             display_name=strategy_display,  # Use display name for the plot title
             **params,
@@ -148,18 +150,21 @@ if __name__ == "__main__":
             "params": {"alpha": 0.1},
             "suffix": "skewed",  # More skewed distribution
         },
-        {"name": "pathological", "params": {"num_classes_per_partition": 3}},
+        {"name": "pathological", "params": {"num_classes_per_partition": 2}},
         {
             "name": "pathological",
             "params": {
-                "num_classes_per_partition": 3,
+                "num_classes_per_partition": 2,
                 "class_assignment_mode": "first-deterministic",
             },
             "suffix": "first-deterministic",
         },
         {
             "name": "pathological",
-            "params": {"num_classes_per_partition": 3, "complete_mode": True},
+            "params": {
+                "num_classes_per_partition": 2,
+                "complete_mode": True
+            },
             "suffix": "complete",
         },
         {"name": "shard", "params": {"shards_per_partition": 2}},
